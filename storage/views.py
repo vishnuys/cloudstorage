@@ -4,7 +4,7 @@ import requests
 import threading
 import functools
 # from django.shortcuts import render
-from .helper import replicateBucket, get_address, hinted_handoff
+from .helper import replicateBucket, get_address, hinted_handoff, replicateDelete
 from django.http import HttpResponse, JsonResponse
 from cloud.settings import ARCHIVE_DIR
 from .models import Bucket, HandoffQueue
@@ -51,12 +51,12 @@ class DeleteBucket(TemplateView):
         result = ""
         buckets = Bucket.objects.filter(name=name)
         if len(buckets) == 0:
-            result = "Bucket already exists"
+            result = "Bucket doesn't exist"
         else:
             shutil.rmtree(path)
             bucket = Bucket.objects.get(name=name)
             bucket.delete()
-        count = replicateBucket(name)
+        count = replicateDelete(name)
         data = {'result': result, 'count': count}
         return JsonResponse(data)
 
@@ -77,6 +77,24 @@ class ReplicateBucket(TemplateView):
         else:
             bucket = Bucket.objects.get(name=name)
             result = "Bucket already exists"
+        return HttpResponse(result)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ReplicateDelete(TemplateView):
+
+    def post(self, request):
+        name = request.POST.get('name')
+        path = os.path.join(ARCHIVE_DIR, name)
+        result = ""
+        buckets = Bucket.objects.filter(name=name)
+        if len(buckets) == 0:
+            result = "Bucket doesn't exist"
+        else:
+            shutil.rmtree(path)
+            bucket = Bucket.objects.get(name=name)
+            bucket.delete()
+            result = "Bucket delete successful"
         return HttpResponse(result)
 
 
