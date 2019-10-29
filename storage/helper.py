@@ -15,3 +15,4 @@ def replicateBucket(name):
                 count += 1
         except Exception:
             print(format_exc())
+    return count

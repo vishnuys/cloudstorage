@@ -1,7 +1,7 @@
 import os
 # from django.shortcuts import render
 from .helper import replicateBucket
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from cloud.settings import ARCHIVE_DIR
 from .models import Bucket
 from django.views.generic import TemplateView
@@ -29,11 +29,12 @@ class CreateBucket(TemplateView):
             bucket.save()
             os.makedirs(path)
             result = "Bucket Creation Successful"
-            replicateBucket(name)
         else:
             bucket = Bucket.objects.get(name=name)
             result = "Bucket already exists"
-        return HttpResponse(result)
+        count = replicateBucket(name)
+        data = {'result': result, 'count': count}
+        return JsonResponse(data)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
