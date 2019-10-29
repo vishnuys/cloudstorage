@@ -68,3 +68,4 @@ class HandleAlive(TemplateView):
                 addr = os.path.join(get_address(node), 'replicate/')
                 data = {'name': i.name}
                 request.post(addr, data=data)
+        return HttpResponse('OK')

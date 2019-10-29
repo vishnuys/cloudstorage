@@ -136,3 +136,5 @@ def sendAlive():
             requests.post(addr, data={'node': NODE_NAME})
         except Exception:
             print(format_exc())
+
+sendAlive()
