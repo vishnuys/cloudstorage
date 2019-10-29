@@ -1,12 +1,13 @@
 import os
 # from django.shortcuts import render
-from .helper import replicateBucket
+from .helper import replicateBucket, get_address
 from django.http import HttpResponse, JsonResponse
 from cloud.settings import ARCHIVE_DIR
-from .models import Bucket
+from .models import Bucket, HandoffQueue
 from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from cloud.settings import AVAILABLE_NODES
 
 
 # Create your views here.
@@ -54,3 +55,16 @@ class ReplicateBucket(TemplateView):
             bucket = Bucket.objects.get(name=name)
             result = "Bucket already exists"
         return HttpResponse(result)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class HandleAlive(TemplateView):
+
+    def post(self, request):
+        node = request.POST.get('node')
+        hq = HandoffQueue.objects.filter(node=node)
+        for i in hq:
+            if i.function == 'create_bucket':
+                addr = os.path.join(get_address(node), 'replicate/')
+                data = {'name': i.name}
+                request.post(addr, data=data)

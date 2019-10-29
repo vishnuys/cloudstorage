@@ -11,7 +11,13 @@ class File(models.Model):
 
 
 class Bucket(models.Model):
-    version = models.IntegerField()
     name = models.CharField(max_length=200, unique=True)
     date_created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
+
+
+class HandoffQueue(models.Model):
+    node = models.CharField(max_length=100)
+    function = models.CharField(max_length=100)
+    name = models.CharField(max_length=200)
+    bucket = models.CharField(max_length=200)

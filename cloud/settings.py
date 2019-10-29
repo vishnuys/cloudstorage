@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import requests
+from traceback import format_exc
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -125,3 +127,12 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 from .conf import *
+
+
+def sendAlive():
+    for i in AVAILABLE_NODES:
+        addr = os.path.join(i['address'], 'alive/')
+        try:
+            requests.post(addr, data={'node': NODE_NAME})
+        except Exception:
+            print(format_exc())
