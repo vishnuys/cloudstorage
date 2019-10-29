@@ -23,5 +23,6 @@ urlpatterns = [
     path('createbucket/', views.CreateBucket.as_view()),
     path('replicate/', views.ReplicateBucket.as_view()),
     path('deletebucket/', views.DeleteBucket.as_view()),
+    path('replicate_delete/', views.ReplicateDelete.as_view()),
     path('alive/', views.HandleAlive.as_view()),
 ]
