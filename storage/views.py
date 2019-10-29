@@ -1,4 +1,5 @@
 import os
+import requests
 # from django.shortcuts import render
 from .helper import replicateBucket, get_address
 from django.http import HttpResponse, JsonResponse
@@ -67,5 +68,5 @@ class HandleAlive(TemplateView):
             if i.function == 'create_bucket':
                 addr = os.path.join(get_address(node), 'replicate/')
                 data = {'name': i.name}
-                request.post(addr, data=data)
+                requests.post(addr, data=data)
         return HttpResponse('OK')
