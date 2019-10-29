@@ -20,4 +20,6 @@ from storage import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('status/', views.ServerStatus.as_view()),
+    path('createbucket/', views.CreateBucket.as_view()),
+    path('replicate/', views.ReplicateBucket.as_view()),
 ]

@@ -1,5 +1,6 @@
 import os
 # from django.shortcuts import render
+from .helper import replicateBucket
 from django.http import HttpResponse
 from cloud.settings import ARCHIVE_DIR
 from .models import Bucket
@@ -28,4 +29,28 @@ class CreateBucket(TemplateView):
             bucket.save()
             os.makedirs(path)
             result = "Bucket Creation Successful"
+            replicateBucket(name)
+        else:
+            bucket = Bucket.objects.get(name=name)
+            result = "Bucket already exists"
+        return HttpResponse(result)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ReplicateBucket(TemplateView):
+
+    def post(self, request):
+        name = request.POST.get('name')
+        path = os.path.join(ARCHIVE_DIR, name)
+        result = ""
+        buckets = Bucket.objects.filter(name=name)
+        if len(buckets) == 0:
+            bucket = Bucket(version=1, name=name)
+            bucket.save()
+            os.makedirs(path)
+            result = "Bucket Creation Successful"
+            replicateBucket(name)
+        else:
+            bucket = Bucket.objects.get(name=name)
+            result = "Bucket already exists"
         return HttpResponse(result)
