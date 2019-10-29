@@ -1,7 +1,9 @@
 import os
 import requests
+import threading
+import functools
 # from django.shortcuts import render
-from .helper import replicateBucket, get_address
+from .helper import replicateBucket, get_address, hinted_handoff
 from django.http import HttpResponse, JsonResponse
 from cloud.settings import ARCHIVE_DIR
 from .models import Bucket, HandoffQueue
@@ -63,10 +65,6 @@ class HandleAlive(TemplateView):
 
     def post(self, request):
         node = request.POST.get('node')
-        hq = HandoffQueue.objects.filter(node=node)
-        for i in hq:
-            if i.function == 'create_bucket':
-                addr = os.path.join(get_address(node), 'replicate/')
-                data = {'name': i.name}
-                requests.post(addr, data=data)
+        x = threading.Thread(target=hinted_handoff, args=(node,), daemon=True)
+        x.start()
         return HttpResponse('OK')

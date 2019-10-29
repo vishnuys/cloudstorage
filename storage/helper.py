@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 from traceback import format_exc
 from cloud.settings import AVAILABLE_NODES
@@ -29,3 +30,14 @@ def get_address(node):
     for i in AVAILABLE_NODES:
         if i['name'] == node:
             return i['address']
+
+def hinted_handoff(node):
+    time.sleep(2)
+    hq = HandoffQueue.objects.filter(node=node)
+    for i in hq:
+        if i.function == 'create_bucket':
+            addr = os.path.join(get_address(node), 'replicate/')
+            data = {'name': i.name}
+            r = requests.post(addr, data=data)
+            if r.ok:
+                i.delete()
