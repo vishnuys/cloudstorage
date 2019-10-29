@@ -1,4 +1,5 @@
 import os
+import shutil
 import requests
 import threading
 import functools
@@ -36,6 +37,25 @@ class CreateBucket(TemplateView):
         else:
             bucket = Bucket.objects.get(name=name)
             result = "Bucket already exists"
+        count = replicateBucket(name)
+        data = {'result': result, 'count': count}
+        return JsonResponse(data)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DeleteBucket(TemplateView):
+
+    def post(self, request):
+        name = request.POST.get('name')
+        path = os.path.join(ARCHIVE_DIR, name)
+        result = ""
+        buckets = Bucket.objects.filter(name=name)
+        if len(buckets) == 0:
+            result = "Bucket already exists"
+        else:
+            shutil.rmtree(path)
+            bucket = Bucket.objects.get(name=name)
+            bucket.delete()
         count = replicateBucket(name)
         data = {'result': result, 'count': count}
         return JsonResponse(data)
