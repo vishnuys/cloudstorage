@@ -26,7 +26,7 @@ class CreateBucket(TemplateView):
         result = ""
         buckets = Bucket.objects.filter(name=name)
         if len(buckets) == 0:
-            bucket = Bucket(version=1, name=name)
+            bucket = Bucket(name=name)
             bucket.save()
             os.makedirs(path)
             result = "Bucket Creation Successful"
@@ -47,7 +47,7 @@ class ReplicateBucket(TemplateView):
         result = ""
         buckets = Bucket.objects.filter(name=name)
         if len(buckets) == 0:
-            bucket = Bucket(version=1, name=name)
+            bucket = Bucket(name=name)
             bucket.save()
             os.makedirs(path)
             result = "Bucket Creation Successful"
