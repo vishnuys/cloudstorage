@@ -50,7 +50,6 @@ class ReplicateBucket(TemplateView):
             bucket.save()
             os.makedirs(path)
             result = "Bucket Creation Successful"
-            replicateBucket(name)
         else:
             bucket = Bucket.objects.get(name=name)
             result = "Bucket already exists"
