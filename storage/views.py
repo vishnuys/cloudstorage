@@ -28,9 +28,9 @@ class CreateBucket(TemplateView):
         buckets = Bucket.objects.filter(name=name)
         count = 0
         if len(buckets) == 0:
+            os.makedirs(path)
             bucket = Bucket(name=name)
             bucket.save()
-            os.makedirs(path)
             result = "Bucket Creation Successful"
             count += 1
         else:
@@ -71,9 +71,9 @@ class ReplicateBucket(TemplateView):
         result = ""
         buckets = Bucket.objects.filter(name=name)
         if len(buckets) == 0:
+            os.makedirs(path)
             bucket = Bucket(name=name)
             bucket.save()
-            os.makedirs(path)
             result = "Bucket Creation Successful"
             return HttpResponse(result)
         return HttpResponseBadRequest('Bucket already exists')
