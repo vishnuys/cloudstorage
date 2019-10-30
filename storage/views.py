@@ -155,7 +155,7 @@ class ReplicateFile(TemplateView):
             with open(path, 'wb') as f:
                 for chunk in file.chunks():
                     f.write(chunk)
-            bucket = Bucket.objects.get(name=name)
+            bucket = Bucket.objects.get(name=bucket)
             file_model = File(version=1, name=name, bucket=bucket)
             file_model.save()
         return HttpResponse(result)
