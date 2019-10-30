@@ -17,12 +17,13 @@ def replicateBucket(name):
             if r.ok:
                 count += 1
             else:
-                hq = HandoffQueue(node=i['name'], function='create_bucket', name=name)
-                hq.save()
-        except Exception:
+                print("Error %d: %s" % (r.status_code, r.text))
+        except requests.exceptions.RequestException:
             print(format_exc())
             hq = HandoffQueue(node=i['name'], function='create_bucket', name=name)
             hq.save()
+        except Exception:
+            print(format_exc())
 
     return count
 
@@ -37,12 +38,13 @@ def replicateDelete(name):
             if r.ok:
                 count += 1
             else:
-                hq = HandoffQueue(node=i['name'], function='delete_bucket', name=name)
-                hq.save()
-        except Exception:
+                print("Error %d: %s" % (r.status_code, r.text))
+        except requests.exceptions.RequestException:
             print(format_exc())
             hq = HandoffQueue(node=i['name'], function='delete_bucket', name=name)
             hq.save()
+        except Exception:
+            print(format_exc())
 
     return count
 
@@ -90,13 +92,8 @@ def replicateFile(name, bucket, file):
             if r.ok:
                 count += 1
             else:
-                filepath = os.path.join(HANDOFF_DIR, uuid4())
-                with open(filepath, 'w') as fp:
-                    for chunk in file.chunks():
-                        fp.write(chunk)
-                hq = HandoffQueue(node=i['name'], function='create_file', name=name, bucket=bucket, path=filepath)
-                hq.save()
-        except Exception:
+                print("Error %d: %s" % (r.status_code, r.text))
+        except requests.exceptions.RequestException:
             print(format_exc())
             filepath = os.path.join(HANDOFF_DIR, uuid4())
             with open(filepath, 'w') as fp:
@@ -104,5 +101,7 @@ def replicateFile(name, bucket, file):
                     fp.write(chunk)
             hq = HandoffQueue(node=i['name'], function='create_file', name=name, bucket=bucket, path=filepath)
             hq.save()
+        except Exception:
+            print(format_exc())
 
     return count

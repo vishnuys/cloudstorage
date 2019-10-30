@@ -75,10 +75,8 @@ class ReplicateBucket(TemplateView):
             bucket.save()
             os.makedirs(path)
             result = "Bucket Creation Successful"
-        else:
-            bucket = Bucket.objects.get(name=name)
-            result = "Bucket already exists"
-        return HttpResponse(result)
+            return HttpResponse(result)
+        return HttpResponseBadRequest('Bucket already exists')
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -89,14 +87,13 @@ class ReplicateDelete(TemplateView):
         path = os.path.join(ARCHIVE_DIR, name)
         result = ""
         buckets = Bucket.objects.filter(name=name)
-        if len(buckets) == 0:
-            result = "Bucket doesn't exist"
-        else:
+        if len(buckets) > 0:
             shutil.rmtree(path)
             bucket = Bucket.objects.get(name=name)
             bucket.delete()
             result = "Bucket delete successful"
-        return HttpResponse(result)
+            return HttpResponse(result)
+        return HttpResponseBadRequest("Bucket doesn't exist")
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -115,8 +112,8 @@ class CreateFile(TemplateView):
 
     def post(self, request):
         file = request.FILES['file']
-        name = request.POST.get('name')
-        bucket = request.POST.get('bucket')
+        name = request.POST['name']
+        bucket = request.POST['bucket']
         path = os.path.join(ARCHIVE_DIR, bucket, name)
         files = File.objects.filter(name=name)
         buckets = Bucket.objects.filter(name=bucket)
@@ -151,9 +148,9 @@ class ReplicateFile(TemplateView):
         buckets = Bucket.objects.filter(name=bucket)
         result = ''
         if len(buckets) == 0:
-            result = 'No such bucket exists'
+            return HttpResponseBadRequest('No such bucket exists')
         elif len(files) > 0:
-            result = 'File already exists. Please use /update/file API to update it.'
+            return HttpResponseBadRequest('File already exists. Please use /update/file API to update it.')
         else:
             bucket = Bucket.objects.get(name=name)
             file_model = File(version=1, name=name, bucket=bucket)
