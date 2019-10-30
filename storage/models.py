@@ -20,4 +20,5 @@ class HandoffQueue(models.Model):
     node = models.CharField(max_length=100)
     function = models.CharField(max_length=100)
     name = models.CharField(max_length=200)
-    bucket = models.CharField(max_length=200)
+    bucket = models.CharField(max_length=200, null=True)
+    path = models.CharField(max_length=400, null=True)

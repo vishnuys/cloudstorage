@@ -1,9 +1,10 @@
 import os
 import time
 import requests
+from uuid import uuid4
 from traceback import format_exc
-from cloud.settings import AVAILABLE_NODES
 from .models import HandoffQueue
+from cloud.settings import AVAILABLE_NODES, HANDOFF_DIR
 
 
 def replicateBucket(name):
@@ -51,7 +52,8 @@ def get_address(node):
         if i['name'] == node:
             return i['address']
 
-def hinted_handoff(node):
+
+def hinted_handoff(node, stopper):
     time.sleep(2)
     hq = HandoffQueue.objects.filter(node=node)
     for i in hq:
@@ -61,3 +63,46 @@ def hinted_handoff(node):
             r = requests.post(addr, data=data)
             if r.ok:
                 i.delete()
+        elif i.function == 'delete_bucket':
+            addr = os.path.join(get_address(node), 'replicate_delete/')
+            data = {'name': i.name}
+            r = requests.post(addr, data=data)
+            if r.ok:
+                i.delete()
+        elif i.function == 'create_file':
+            addr = os.path.join(get_address(node), 'replicatefile/')
+            data = {'name': i.name, 'bucket': i.bucket}
+            filedata = {'file': open(i.path)}
+            r = requests.post(addr, data=data, files=filedata)
+            if r.ok:
+                i.delete()
+    stopper.set()
+
+
+def replicateFile(name, bucket, file):
+    count = 0
+    for i in AVAILABLE_NODES:
+        addr = os.path.join(i['address'], 'replicatefile/')
+        data = {'name': name, 'bucket': bucket}
+        filedata = {'file': file}
+        try:
+            r = requests.post(addr, data=data, files=filedata)
+            if r.ok:
+                count += 1
+            else:
+                filepath = os.path.join(HANDOFF_DIR, uuid4())
+                with open(filepath, 'w') as fp:
+                    for chunk in file.chunks():
+                        fp.write(chunk)
+                hq = HandoffQueue(node=i['name'], function='create_file', name=name, bucket=bucket, path=filepath)
+                hq.save()
+        except Exception:
+            print(format_exc())
+            filepath = os.path.join(HANDOFF_DIR, uuid4())
+            with open(filepath, 'w') as fp:
+                for chunk in file.chunks():
+                    fp.write(chunk)
+            hq = HandoffQueue(node=i['name'], function='create_file', name=name, bucket=bucket, path=filepath)
+            hq.save()
+
+    return count

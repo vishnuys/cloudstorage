@@ -17,9 +17,12 @@ from traceback import format_exc
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ARCHIVE_DIR = os.path.join(BASE_DIR, 'archive_files')
+HANDOFF_DIR = os.path.join(BASE_DIR, 'handoff_files')
 
 if not os.path.exists(ARCHIVE_DIR):
     os.makedirs(ARCHIVE_DIR)
+if not os.path.exists(HANDOFF_DIR):
+    os.makedirs(HANDOFF_DIR)
 
 
 # Quick-start development settings - unsuitable for production

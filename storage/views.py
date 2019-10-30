@@ -1,17 +1,14 @@
 import os
 import shutil
-import requests
 import threading
-import functools
-# from django.shortcuts import render
-from .helper import replicateBucket, get_address, hinted_handoff, replicateDelete
-from django.http import HttpResponse, JsonResponse
+from IPython import embed
+from .models import Bucket, File
 from cloud.settings import ARCHIVE_DIR
-from .models import Bucket, HandoffQueue
 from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from cloud.settings import AVAILABLE_NODES
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from .helper import replicateBucket, hinted_handoff, replicateDelete, replicateFile
 
 
 # Create your views here.
@@ -29,15 +26,17 @@ class CreateBucket(TemplateView):
         path = os.path.join(ARCHIVE_DIR, name)
         result = ""
         buckets = Bucket.objects.filter(name=name)
+        count = 0
         if len(buckets) == 0:
             bucket = Bucket(name=name)
             bucket.save()
             os.makedirs(path)
             result = "Bucket Creation Successful"
+            count += 1
         else:
             bucket = Bucket.objects.get(name=name)
             result = "Bucket already exists"
-        count = replicateBucket(name)
+        count += replicateBucket(name)
         data = {'result': result, 'count': count}
         return JsonResponse(data)
 
@@ -50,13 +49,15 @@ class DeleteBucket(TemplateView):
         path = os.path.join(ARCHIVE_DIR, name)
         result = ""
         buckets = Bucket.objects.filter(name=name)
+        count = 0
         if len(buckets) == 0:
             result = "Bucket doesn't exist"
         else:
             shutil.rmtree(path)
             bucket = Bucket.objects.get(name=name)
             bucket.delete()
-        count = replicateDelete(name)
+            count += 1
+        count += replicateDelete(name)
         data = {'result': result, 'count': count}
         return JsonResponse(data)
 
@@ -103,6 +104,61 @@ class HandleAlive(TemplateView):
 
     def post(self, request):
         node = request.POST.get('node')
-        x = threading.Thread(target=hinted_handoff, args=(node,), daemon=True)
+        stopper = threading.Event()
+        x = threading.Thread(target=hinted_handoff, args=(node, stopper), daemon=True)
         x.start()
         return HttpResponse('OK')
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CreateFile(TemplateView):
+
+    def post(self, request):
+        file = request.FILES['file']
+        name = request.POST.get('name')
+        bucket = request.POST.get('bucket')
+        path = os.path.join(ARCHIVE_DIR, bucket, name)
+        files = File.objects.filter(name=name)
+        buckets = Bucket.objects.filter(name=bucket)
+        count = 0
+        result = ''
+        if len(buckets) == 0:
+            result = 'No such bucket exists'
+        elif len(files) > 0:
+            result = 'File already exists. Please use /update/file API to update it.'
+        else:
+            bucket = Bucket.objects.get(name=name)
+            file_model = File(version=1, name=name, bucket=bucket)
+            file_model.save()
+            with open(path, 'w') as f:
+                for chunk in file.chunks():
+                    f.write(chunk)
+            count += 1
+        count += replicateFile(name, bucket, file)
+        data = {'result': result, 'count': count}
+        return JsonResponse(data)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ReplicateFile(TemplateView):
+
+    def post(self, request):
+        file = request.FILES['file']
+        name = request.POST.get('name')
+        bucket = request.POST.get('bucket')
+        path = os.path.join(ARCHIVE_DIR, bucket, name)
+        files = File.objects.filter(name=name)
+        buckets = Bucket.objects.filter(name=bucket)
+        result = ''
+        if len(buckets) == 0:
+            result = 'No such bucket exists'
+        elif len(files) > 0:
+            result = 'File already exists. Please use /update/file API to update it.'
+        else:
+            bucket = Bucket.objects.get(name=name)
+            file_model = File(version=1, name=name, bucket=bucket)
+            file_model.save()
+            with open(path, 'w') as f:
+                for chunk in file.chunks():
+                    f.write(chunk)
+        return HttpResponse(result)
