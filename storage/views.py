@@ -124,7 +124,7 @@ class CreateFile(TemplateView):
         elif len(files) > 0:
             result = 'File already exists. Please use /update/file API to update it.'
         else:
-            bucket = Bucket.objects.get(name=name)
+            bucket = Bucket.objects.get(name=bucket)
             file_model = File(version=1, name=name, bucket=bucket)
             file_model.save()
             with open(path, 'w') as f:
