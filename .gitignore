@@ -1,5 +1,7 @@
 # Project Specific
 conf.py
+archive_files/
+handoff_files/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

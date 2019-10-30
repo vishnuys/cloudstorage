@@ -96,7 +96,7 @@ def replicateFile(name, bucket, file):
         except requests.exceptions.RequestException:
             print(format_exc())
             filepath = os.path.join(HANDOFF_DIR, uuid4())
-            with open(filepath, 'w') as fp:
+            with open(filepath, 'wb') as fp:
                 for chunk in file.chunks():
                     fp.write(chunk)
             hq = HandoffQueue(node=i['name'], function='create_file', name=name, bucket=bucket, path=filepath)
