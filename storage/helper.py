@@ -88,7 +88,7 @@ def replicateFile(name, bucket, file):
     for i in AVAILABLE_NODES:
         addr = os.path.join(i['address'], 'replicatefile/')
         data = {'name': name, 'bucket': bucket}
-        filepath = os.path.join(HANDOFF_DIR, uuid4())
+        filepath = os.path.join(HANDOFF_DIR, str(uuid4()))
         with open(filepath, 'wb') as fp:
             for chunk in file.chunks():
                 fp.write(chunk)
