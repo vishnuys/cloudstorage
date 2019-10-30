@@ -124,12 +124,12 @@ class CreateFile(TemplateView):
         elif len(files) > 0:
             result = 'File already exists. Please use /update/file API to update it.'
         else:
-            bucket = Bucket.objects.get(name=bucket)
-            file_model = File(version=1, name=name, bucket=bucket)
-            file_model.save()
             with open(path, 'wb') as f:
                 for chunk in file.chunks():
                     f.write(chunk)
+            bucket = Bucket.objects.get(name=bucket)
+            file_model = File(version=1, name=name, bucket=bucket)
+            file_model.save()
             count += 1
         count += replicateFile(name, bucket, file)
         data = {'result': result, 'count': count}
@@ -152,10 +152,10 @@ class ReplicateFile(TemplateView):
         elif len(files) > 0:
             return HttpResponseBadRequest('File already exists. Please use /update/file API to update it.')
         else:
-            bucket = Bucket.objects.get(name=name)
-            file_model = File(version=1, name=name, bucket=bucket)
-            file_model.save()
             with open(path, 'wb') as f:
                 for chunk in file.chunks():
                     f.write(chunk)
+            bucket = Bucket.objects.get(name=name)
+            file_model = File(version=1, name=name, bucket=bucket)
+            file_model.save()
         return HttpResponse(result)
