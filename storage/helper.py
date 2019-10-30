@@ -92,14 +92,15 @@ def replicateFile(name, bucket, file):
         with open(filepath, 'wb') as fp:
             for chunk in file.chunks():
                 fp.write(chunk)
-        with open(filepath) as fp:
-            filedata = {'file': fp}
+        fp = open(filepath)
+        filedata = {'file': fp}
         try:
             r = requests.post(addr, data=data, files=filedata)
             if r.ok:
                 count += 1
             else:
                 print("Error %d: %s" % (r.status_code, r.text))
+            fp.close()
             os.remove(filepath)
         except requests.exceptions.RequestException:
             print(format_exc())
