@@ -119,6 +119,8 @@ class CreateFile(TemplateView):
         buckets = Bucket.objects.filter(name=bucket)
         count = 0
         result = ''
+        print(name, files)
+        print(bucket, buckets)
         if len(buckets) == 0:
             result = 'No such bucket exists'
         elif len(files) > 0:
@@ -127,8 +129,8 @@ class CreateFile(TemplateView):
             with open(path, 'wb') as f:
                 for chunk in file.chunks():
                     f.write(chunk)
-            bucket = Bucket.objects.get(name=bucket)
-            file_model = File(version=1, name=name, bucket=bucket)
+            bucket_model = Bucket.objects.get(name=bucket)
+            file_model = File(version=1, name=name, bucket=bucket_model)
             file_model.save()
             count += 1
         count += replicateFile(name, bucket, file)
@@ -146,6 +148,8 @@ class ReplicateFile(TemplateView):
         path = os.path.join(ARCHIVE_DIR, bucket, name)
         files = File.objects.filter(name=name)
         buckets = Bucket.objects.filter(name=bucket)
+        print(name, files)
+        print(bucket, buckets)
         result = ''
         if len(buckets) == 0:
             return HttpResponseBadRequest('No such bucket exists')
@@ -155,7 +159,7 @@ class ReplicateFile(TemplateView):
             with open(path, 'wb') as f:
                 for chunk in file.chunks():
                     f.write(chunk)
-            bucket = Bucket.objects.get(name=bucket)
-            file_model = File(version=1, name=name, bucket=bucket)
+            bucket_model = Bucket.objects.get(name=bucket)
+            file_model = File(version=1, name=name, bucket=bucket_model)
             file_model.save()
         return HttpResponse(result)
