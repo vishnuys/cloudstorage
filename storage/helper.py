@@ -92,7 +92,7 @@ def replicateFile(name, bucket, file):
         with open(filepath, 'wb') as fp:
             for chunk in file.chunks():
                 fp.write(chunk)
-        fp = open(filepath)
+        fp = open(filepath, 'rb')
         filedata = {'file': fp}
         try:
             r = requests.post(addr, data=data, files=filedata)
