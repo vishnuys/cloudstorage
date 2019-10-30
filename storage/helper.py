@@ -4,6 +4,7 @@ import requests
 from uuid import uuid4
 from traceback import format_exc
 from .models import HandoffQueue
+from IPython import embed
 from cloud.settings import AVAILABLE_NODES, HANDOFF_DIR
 
 
@@ -74,7 +75,8 @@ def hinted_handoff(node, stopper):
         elif i.function == 'create_file':
             addr = os.path.join(get_address(node), 'replicatefile/')
             data = {'name': i.name, 'bucket': i.bucket}
-            filedata = {'file': open(i.path)}
+            with open(i.path) as fp:
+                filedata = {'file': fp}
             r = requests.post(addr, data=data, files=filedata)
             if r.ok:
                 i.delete()
@@ -86,19 +88,21 @@ def replicateFile(name, bucket, file):
     for i in AVAILABLE_NODES:
         addr = os.path.join(i['address'], 'replicatefile/')
         data = {'name': name, 'bucket': bucket}
-        filedata = {'file': file}
+        filepath = os.path.join(HANDOFF_DIR, uuid4())
+        with open(filepath, 'wb') as fp:
+            for chunk in file.chunks():
+                fp.write(chunk)
+        with open(filepath) as fp:
+            filedata = {'file': fp}
         try:
             r = requests.post(addr, data=data, files=filedata)
             if r.ok:
                 count += 1
             else:
                 print("Error %d: %s" % (r.status_code, r.text))
+            os.remove(filepath)
         except requests.exceptions.RequestException:
             print(format_exc())
-            filepath = os.path.join(HANDOFF_DIR, uuid4())
-            with open(filepath, 'wb') as fp:
-                for chunk in file.chunks():
-                    fp.write(chunk)
             hq = HandoffQueue(node=i['name'], function='create_file', name=name, bucket=bucket, path=filepath)
             hq.save()
         except Exception:
