@@ -8,7 +8,7 @@ from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
-from .helper import replicateBucket, hinted_handoff, replicateDelete, replicateFile
+from .helper import replicateBucket, hinted_handoff, replicateDelete, replicateFile, replicateDeleteFile
 
 
 # Create your views here.
@@ -56,6 +56,7 @@ class DeleteBucket(TemplateView):
             shutil.rmtree(path)
             bucket = Bucket.objects.get(name=name)
             bucket.delete()
+            result = 'Bucket Deleted Successfully'
             count += 1
         count += replicateDelete(name)
         data = {'result': result, 'count': count}
@@ -132,6 +133,7 @@ class CreateFile(TemplateView):
             bucket_model = Bucket.objects.get(name=bucket)
             file_model = File(version=1, name=name, bucket=bucket_model)
             file_model.save()
+            result = 'File Creation Successful'
             count += 1
         count += replicateFile(name, bucket, file)
         data = {'result': result, 'count': count}
@@ -162,4 +164,56 @@ class ReplicateFile(TemplateView):
             bucket_model = Bucket.objects.get(name=bucket)
             file_model = File(version=1, name=name, bucket=bucket_model)
             file_model.save()
+        return HttpResponse(result)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DeleteFile(TemplateView):
+
+    def post(self, request):
+        name = request.POST['name']
+        bucket = request.POST['bucket']
+        path = os.path.join(ARCHIVE_DIR, bucket, name)
+        files = File.objects.filter(name=name)
+        buckets = Bucket.objects.filter(name=bucket)
+        count = 0
+        print(name, files)
+        print(bucket, buckets)
+        if len(buckets) == 0:
+            result = 'No such bucket exists'
+        elif len(files) == 0:
+            result = 'File doesn\'t exist.'
+        else:
+            os.remove(path)
+            bucket_model = Bucket.objects.get(name=bucket)
+            file_model = File.objects.get(name=name, bucket=bucket_model)
+            file_model.delete()
+            result = 'File Deletion Successful'
+            count += 1
+        count += replicateDeleteFile(name, bucket)
+        data = {'result': result, 'count': count}
+        return JsonResponse(data)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ReplicateDeleteFile(TemplateView):
+
+    def post(self, request):
+        name = request.POST.get('name')
+        bucket = request.POST.get('bucket')
+        path = os.path.join(ARCHIVE_DIR, bucket, name)
+        files = File.objects.filter(name=name)
+        buckets = Bucket.objects.filter(name=bucket)
+        print(name, files)
+        print(bucket, buckets)
+        if len(buckets) == 0:
+            return HttpResponseBadRequest('No such bucket exists')
+        elif len(files) == 0:
+            return HttpResponseBadRequest('File doesn\'t exist.')
+        else:
+            os.remove(path)
+            bucket_model = Bucket.objects.get(name=bucket)
+            file_model = File.objects.get(name=name, bucket=bucket_model)
+            file_model.delete()
+            result = 'File Deletion Successful'
         return HttpResponse(result)
