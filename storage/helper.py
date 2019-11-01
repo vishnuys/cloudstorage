@@ -82,6 +82,16 @@ def hinted_handoff(node, stopper):
                 fp.close()
                 os.remove(i.path)
                 i.delete()
+        elif i.function == 'delete_file':
+            addr = os.path.join(get_address(node), 'replicatedeletefile/')
+            data = {'name': i.name, 'bucket': i.bucket}
+            fp = open(i.path, 'rb')
+            filedata = {'file': fp}
+            r = requests.post(addr, data=data, files=filedata)
+            if r.ok:
+                fp.close()
+                os.remove(i.path)
+                i.delete()
     stopper.set()
 
 
