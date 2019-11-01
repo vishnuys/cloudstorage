@@ -87,14 +87,15 @@ def hinted_handoff(node, stopper):
 
 def replicateFile(name, bucket, file):
     count = 0
+    filepath = os.path.join(HANDOFF_DIR, str(uuid4()))
+    delete = True
+    with open(filepath, 'wb') as fp:
+        for chunk in file.chunks():
+            fp.write(chunk)
+    fp = open(filepath, 'rb')
     for i in AVAILABLE_NODES:
         addr = os.path.join(i['address'], 'replicatefile/')
         data = {'name': name, 'bucket': bucket}
-        filepath = os.path.join(HANDOFF_DIR, str(uuid4()))
-        with open(filepath, 'wb') as fp:
-            for chunk in file.chunks():
-                fp.write(chunk)
-        fp = open(filepath, 'rb')
         filedata = {'file': fp}
         try:
             r = requests.post(addr, data=data, files=filedata)
@@ -102,15 +103,17 @@ def replicateFile(name, bucket, file):
                 count += 1
             else:
                 print("Error %d: %s" % (r.status_code, r.text))
-            fp.close()
-            os.remove(filepath)
         except requests.exceptions.RequestException:
             print(format_exc())
+            delete = False
             hq = HandoffQueue(node=i['name'], function='create_file', name=name, bucket=bucket, path=filepath)
             hq.save()
         except Exception:
             print(format_exc())
 
+    fp.close()
+    if delete:
+        os.remove(filepath)
     return count
 
 
