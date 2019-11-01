@@ -87,8 +87,6 @@ def hinted_handoff(node, stopper):
             data = {'name': i.name, 'bucket': i.bucket}
             r = requests.post(addr, data=data)
             if r.ok:
-                fp.close()
-                os.remove(i.path)
                 i.delete()
     stopper.set()
 
