@@ -112,7 +112,7 @@ def replicateFile(name, bucket, file):
             else:
                 print("Error %d: %s" % (r.status_code, r.text))
         except requests.exceptions.RequestException:
-            print(format_exc())
+            print(i['name'], 'is unreachable')
             delete = False
             hq = HandoffQueue(node=i['name'], function='create_file', name=name, bucket=bucket, path=filepath)
             hq.save()
