@@ -140,7 +140,8 @@ class CreateFile(TemplateView):
         rep_count, rep_clocks = replicateFile(name, bucket, file)
         print(rep_count, rep_clocks)
         count += rep_count
-        clocks.update([rep_clocks])
+        if len(rep_clocks.keys()) > 0:
+            clocks.update([rep_clocks])
         data = {'result': result, 'count': count, 'vector_clocks': clocks}
         return JsonResponse(data)
 
