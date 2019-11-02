@@ -107,9 +107,7 @@ def replicateFile(name, bucket, file):
         try:
             r = requests.post(addr, data=data, files=filedata)
             if r.ok:
-                embed()
-                clocks.update([r.json()['vector']])
-                print(clocks)
+                clocks[i.name] = r.json()['vector']
                 count += 1
             else:
                 print("Error %d: %s" % (r.status_code, r.text))
@@ -120,11 +118,9 @@ def replicateFile(name, bucket, file):
             hq.save()
         except Exception:
             print(format_exc())
-
     fp.close()
     if delete:
         os.remove(filepath)
-    print(clocks)
     return count, clocks
 
 
