@@ -95,6 +95,7 @@ def replicateFile(name, bucket, file):
     count = 0
     filepath = os.path.join(HANDOFF_DIR, str(uuid4()))
     delete = True
+    clocks = {}
     with open(filepath, 'wb') as fp:
         for chunk in file.chunks():
             fp.write(chunk)
@@ -106,6 +107,7 @@ def replicateFile(name, bucket, file):
         try:
             r = requests.post(addr, data=data, files=filedata)
             if r.ok:
+                clocks.update([r.json()['vector']])
                 count += 1
             else:
                 print("Error %d: %s" % (r.status_code, r.text))
@@ -120,7 +122,7 @@ def replicateFile(name, bucket, file):
     fp.close()
     if delete:
         os.remove(filepath)
-    return count
+    return count, clocks
 
 
 def replicateDeleteFile(name, bucket):

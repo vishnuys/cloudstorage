@@ -3,8 +3,8 @@ import shutil
 import threading
 from IPython import embed
 from .models import Bucket, File
-from cloud.settings import ARCHIVE_DIR
 from django.views.generic import TemplateView
+from cloud.settings import ARCHIVE_DIR, NODE_NAME
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
@@ -120,12 +120,13 @@ class CreateFile(TemplateView):
         buckets = Bucket.objects.filter(name=bucket)
         count = 0
         result = ''
+        clocks = {}
         print(name, files)
         print(bucket, buckets)
         if len(buckets) == 0:
             result = 'No such bucket exists'
         elif len(files) > 0:
-            result = 'File already exists. Please use /update/file API to update it.'
+            result = 'File already exists. Please use "/update/filename" API to update it.'
         else:
             with open(path, 'wb') as f:
                 for chunk in file.chunks():
@@ -133,10 +134,14 @@ class CreateFile(TemplateView):
             bucket_model = Bucket.objects.get(name=bucket)
             file_model = File(version=1, name=name, bucket=bucket_model)
             file_model.save()
+            clocks.append(file.version)
             result = 'File Creation Successful'
             count += 1
-        count += replicateFile(name, bucket, file)
-        data = {'result': result, 'count': count}
+            clocks = {NODE_NAME: 1}
+        rep_count, rep_clocks = replicateFile(name, bucket, file)
+        count += rep_count
+        clocks.update([rep_clocks])
+        data = {'result': result, 'count': count, 'vector_clocks': clocks}
         return JsonResponse(data)
 
 
@@ -152,11 +157,10 @@ class ReplicateFile(TemplateView):
         buckets = Bucket.objects.filter(name=bucket)
         print(name, files)
         print(bucket, buckets)
-        result = ''
         if len(buckets) == 0:
             return HttpResponseBadRequest('No such bucket exists')
         elif len(files) > 0:
-            return HttpResponseBadRequest('File already exists. Please use /update/file API to update it.')
+            return HttpResponseBadRequest('File already exists. Please use "/update/filename" API to update it.')
         else:
             with open(path, 'wb') as f:
                 for chunk in file.chunks():
@@ -164,7 +168,8 @@ class ReplicateFile(TemplateView):
             bucket_model = Bucket.objects.get(name=bucket)
             file_model = File(version=1, name=name, bucket=bucket_model)
             file_model.save()
-        return HttpResponse(result)
+            result = {'vector': {NODE_NAME: 1}, 'status': 'File Creation Successful'}
+            return JsonResponse(result)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -191,7 +196,7 @@ class DeleteFile(TemplateView):
             result = 'File Deletion Successful'
             count += 1
         count += replicateDeleteFile(name, bucket)
-        data = {'result': result, 'count': count}
+        data = {'result': result, 'count': count, 'vector_clocks': {}}
         return JsonResponse(data)
 
 
