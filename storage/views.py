@@ -134,10 +134,9 @@ class CreateFile(TemplateView):
             bucket_model = Bucket.objects.get(name=bucket)
             file_model = File(version=1, name=name, bucket=bucket_model)
             file_model.save()
-            clocks.append(file.version)
+            clocks = {NODE_NAME: file_model.version}
             result = 'File Creation Successful'
             count += 1
-            clocks = {NODE_NAME: 1}
         rep_count, rep_clocks = replicateFile(name, bucket, file)
         count += rep_count
         clocks.update([rep_clocks])
