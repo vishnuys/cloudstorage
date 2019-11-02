@@ -8,7 +8,8 @@ from cloud.settings import ARCHIVE_DIR, NODE_NAME
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
-from .helper import replicateBucket, hinted_handoff, replicateDelete, replicateFile, replicateDeleteFile
+from .helper import replicateBucket, hinted_handoff, replicateDelete, replicateFile, \
+    replicateDeleteFile, replicateUpdateFile
 
 
 # Create your views here.
@@ -222,3 +223,69 @@ class ReplicateDeleteFile(TemplateView):
             file_model.delete()
             result = 'File Deletion Successful'
         return HttpResponse(result)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UpdateFile(TemplateView):
+
+    def post(self, request):
+        file = request.FILES['file']
+        name = request.POST['name']
+        bucket = request.POST['bucket']
+        path = os.path.join(ARCHIVE_DIR, bucket, name)
+        files = File.objects.filter(name=name)
+        buckets = Bucket.objects.filter(name=bucket)
+        count = 0
+        result = ''
+        clocks = {}
+        print(name, files)
+        print(bucket, buckets)
+        if len(buckets) == 0:
+            result = 'No such bucket exists'
+        elif len(files) == 0:
+            result = 'File doesn\'t exist.'
+        else:
+            with open(path, 'wb') as f:
+                for chunk in file.chunks():
+                    f.write(chunk)
+            bucket_model = Bucket.objects.get(name=bucket)
+            file_model = File.objects.get(name=name, bucket=bucket_model)
+            file_model.version += 1
+            file_model.save()
+            clocks = {NODE_NAME: file_model.version}
+            result = 'File Updation Successful'
+            count += 1
+        rep_count, rep_clocks = replicateUpdateFile(name, bucket, file)
+        print(rep_count, rep_clocks)
+        count += rep_count
+        clocks = {**clocks, **rep_clocks}
+        data = {'result': result, 'count': count, 'vector_clocks': clocks}
+        return JsonResponse(data)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ReplicateUpdateFile(TemplateView):
+
+    def post(self, request):
+        file = request.FILES['file']
+        name = request.POST.get('name')
+        bucket = request.POST.get('bucket')
+        path = os.path.join(ARCHIVE_DIR, bucket, name)
+        files = File.objects.filter(name=name)
+        buckets = Bucket.objects.filter(name=bucket)
+        print(name, files)
+        print(bucket, buckets)
+        if len(buckets) == 0:
+            return HttpResponseBadRequest('No such bucket exists')
+        elif len(files) == 0:
+            return HttpResponseBadRequest('File doesn\'t exist.')
+        else:
+            with open(path, 'wb') as f:
+                for chunk in file.chunks():
+                    f.write(chunk)
+            bucket_model = Bucket.objects.get(name=bucket)
+            file_model = File.objects.get(name=name, bucket=bucket_model)
+            file_model.version += 1
+            file_model.save()
+            result = {'vector': file_model.version, 'status': 'File Updation Successful'}
+            return JsonResponse(result)

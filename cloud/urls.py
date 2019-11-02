@@ -28,5 +28,7 @@ urlpatterns = [
     path('replicatefile/', views.ReplicateFile.as_view()),
     path('deletefile/', views.DeleteFile.as_view()),
     path('replicatedeletefile/', views.ReplicateDeleteFile.as_view()),
+    path('updatefile/', views.UpdateFile.as_view()),
+    path('replicateupdatefile/', views.ReplicateUpdateFile.as_view()),
     path('alive/', views.HandleAlive.as_view()),
 ]
