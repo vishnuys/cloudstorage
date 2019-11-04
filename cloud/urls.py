@@ -31,5 +31,6 @@ urlpatterns = [
     path('updatefile/', views.UpdateFile.as_view()),
     path('replicateupdatefile/', views.ReplicateUpdateFile.as_view()),
     path('alive/', views.HandleAlive.as_view()),
+    path('getvector/', views.GetVector.as_view()),
     path('file/<bucket>/<name>', views.FileDownload.as_view()),
 ]

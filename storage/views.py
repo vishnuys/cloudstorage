@@ -311,3 +311,16 @@ class FileDownload(TemplateView):
         response['Content-Type'] = mimetype
         response['Content-Disposition'] = 'attachment; filename=%s' % name
         return response
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GetVector(TemplateView):
+
+    def get(self, request, bucket, name):
+        try:
+            bucket_model = Bucket.objects.get(name=bucket)
+            file = File.objects.get(name=name, bucket=bucket_model)
+            result = {'vector': file.version}
+            return JsonResponse(result)
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound('Invalid File')
