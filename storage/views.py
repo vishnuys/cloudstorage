@@ -316,8 +316,10 @@ class FileDownload(TemplateView):
 @method_decorator(csrf_exempt, name='dispatch')
 class GetVector(TemplateView):
 
-    def post(self, request, bucket, name):
+    def post(self, request):
         try:
+            name = request.POST.get('name')
+            bucket = request.POST.get('bucket')
             bucket_model = Bucket.objects.get(name=bucket)
             file = File.objects.get(name=name, bucket=bucket_model)
             result = {'vector': file.version}
