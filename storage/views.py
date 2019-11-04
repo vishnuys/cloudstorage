@@ -1,13 +1,15 @@
 import os
 import shutil
 import threading
+import mimetypes
 from IPython import embed
 from .models import Bucket, File
 from django.views.generic import TemplateView
 from cloud.settings import ARCHIVE_DIR, NODE_NAME
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse, HttpResponseNotFound
 from .helper import replicateBucket, hinted_handoff, replicateDelete, replicateFile, \
     replicateDeleteFile, replicateUpdateFile
 
@@ -289,3 +291,23 @@ class ReplicateUpdateFile(TemplateView):
             file_model.save()
             result = {'vector': file_model.version, 'status': 'File Updation Successful'}
             return JsonResponse(result)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class FileDownload(TemplateView):
+
+    def get(self, request, bucket, name):
+        try:
+            bucket_model = Bucket.objects.get(name=bucket)
+            file = File.objects.get(name=name, bucket=bucket_model)
+            if file:
+                print('File exists')
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound('Invalid File')
+        filepath = os.path.join(ARCHIVE_DIR, bucket, name)
+        mimetype = mimetypes.MimeTypes().guess_type(filepath)[0]
+        response = HttpResponse()
+        response['X-Sendfile'] = filepath
+        response['Content-Type'] = mimetype
+        response['Content-Disposition'] = 'attachment; filename=%s' % name
+        return response
