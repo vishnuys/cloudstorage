@@ -197,12 +197,15 @@ def replicateUpdateFile(name, bucket, file):
 import json
 
 def reconcile_gossip(recieved_list):
+    global GOSSIP_LIST
     with open(BASE_DIR + '/gossip.json','r') as f:
         GOSSIP_LIST = json.load(f)
     for s in GOSSIP_LIST:
         for r in recieved_list:
-            s['HB'] = max(s['HB'], r['HB'])
-            s['last_modified'] = max(s['last_modified'], r['last_modified'])
+            if s['name'] == r['name']:
+                s['HB'] = max(s['HB'], r['HB'])
+                s['last_modified'] = max(s['last_modified'], r['last_modified'])
+                break
     with open(BASE_DIR + '/gossip.json','w') as f:
         json.dump(GOSSIP_LIST, f)
     #set_gossip_list(GOSSIP_LIST)
