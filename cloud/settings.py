@@ -147,6 +147,7 @@ from threading import Timer
 from cloud.settings import NODE_NAME,NODE_ADDRESS
 
 GOSSIP_LIST = []
+rr_node = 0
 t_gossip = 1.0
 t_fail = 3.0
 
@@ -163,20 +164,28 @@ def gossip():
         GOSSIP_LIST = json.load(f)
     GOSSIP_LIST[-1]['HB'] += 1
     GOSSIP_LIST[-1]['last_modified'] = datetime.datetime.now().timestamp()
-    addr1 = os.path.join(GOSSIP_LIST[0]['address'], 'gossip/')
-    addr2 = os.path.join(GOSSIP_LIST[1]['address'], 'gossip/')
-    
+    #addr1 = os.path.join(GOSSIP_LIST[0]['address'], 'gossip/')
+    #addr2 = os.path.join(GOSSIP_LIST[1]['address'], 'gossip/')
+    addr = os.path.join(GOSSIP_LIST[rr_node]['address'], 'gossip/')
+
     with open(BASE_DIR + '/gossip.json', 'w') as f:
         json.dump(GOSSIP_LIST, f)
     data = {'gossiplist': json.dumps(GOSSIP_LIST)}
+    
     try:
-        r = requests.post(addr1, data=data)
+        r = requests.post(addr, data = data)
     except:
-        print('Gossip failed for ' + addr1)
-    try:
-        r = requests.post(addr2, data=data)
-    except:
-        print('Gossip failed for ' + addr2)
+        pass
+        #print('gossip failed for' + GOSSIP_LIST[rr_node]['name']
+    rr_node = (rr_node + 1) % 2
+    #try:
+    #    r = requests.post(addr1, data=data)
+    #except:
+    #    print('Gossip failed for ' + addr1)
+    #try:
+    #    r = requests.post(addr2, data=data)
+    #except:
+    #    print('Gossip failed for ' + addr2)
     
 gossip()
 
