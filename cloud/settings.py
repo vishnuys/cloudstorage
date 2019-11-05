@@ -180,11 +180,18 @@ def gossip():
     
 gossip()
 
-last_list = GOSSIP_LIST
+
+
+last_list = []
+def set_last_list(this_list):
+    global last_list
+    last_list = this_list
+
 with open(BASE_DIR + '/gossip.json','r') as f:
-    last_list = json.load(f)
+    set_last_list(json.load(f))
 
 def fail_check_callback():
+    global last_list
     Timer(t_fail,fail_check_callback).start()
     with open(BASE_DIR + '/gossip.json','r') as f:
         current_list = json.load(f)
