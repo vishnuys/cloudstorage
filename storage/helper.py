@@ -209,7 +209,7 @@ def reconcile_gossip(recieved_list):
     with open(BASE_DIR + '/gossip.json','w') as f:
         json.dump(GOSSIP_LIST, f)
     #set_gossip_list(GOSSIP_LIST)
-    print('reconciled list = ' + str(GOSSIP_LIST))
+    #print('reconciled list = ' + str(GOSSIP_LIST))
 
 
     
