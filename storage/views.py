@@ -365,12 +365,12 @@ class ReadReconciliation(TemplateView):
                 with open(path, 'wb') as f:
                     for chunk in file.chunks():
                         f.write(chunk)
-                file_model.version += 1
+                file_model.version = vector
                 file_model.save()
                 result = 'File Updation Successful'
             else:
                 result = 'File is version is higher than the recieved file'
-            result = {'vector': file.version, 'status': result}
+            result = {'vector': file_model.version, 'status': result}
             return JsonResponse(result)
         except ObjectDoesNotExist:
             return HttpResponseNotFound('Invalid File')
