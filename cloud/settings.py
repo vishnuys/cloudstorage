@@ -160,7 +160,12 @@ def gossip():
     GOSSIP_LIST[-1]['last_modified'] = datetime.datetime.now().timestamp()
     addr1 = os.path.join(GOSSIP_LIST[0]['address'], 'gossip/')
     addr2 = os.path.join(GOSSIP_LIST[1]['address'], 'gossip/')
+    print('Starting Gossip---------------------------------\n\n')
+    print (GOSSIP_LIST)
+
     data = json.dumps(GOSSIP_LIST)
+    print ('Json data:')
+    print (data)
     try:
         r = requests.post(addr1, data=data)
     except:
