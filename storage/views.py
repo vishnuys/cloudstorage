@@ -1,11 +1,12 @@
 import os
+import json
 import shutil
 import threading
 import mimetypes
 from IPython import embed
 from .models import Bucket, File
 from django.views.generic import TemplateView
-from cloud.settings import ARCHIVE_DIR, NODE_NAME
+from cloud.settings import ARCHIVE_DIR, NODE_NAME, GOSSIP_LIST
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
@@ -374,3 +375,11 @@ class ReadReconciliation(TemplateView):
             return JsonResponse(result)
         except ObjectDoesNotExist:
             return HttpResponseNotFound('Invalid File')
+
+@method_decorator(csrf_exempt, name='dispatch')
+class HandleGossip(TemplateView):
+
+    def post(self, request):
+        try:
+            gossip_data = json.loads(request.POST.get('data'))
+            reconcile_gossip(GOSSIP_LIST, gossip_data)
