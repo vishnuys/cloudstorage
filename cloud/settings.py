@@ -171,7 +171,9 @@ def gossip():
         print('Gossip failed for ' + addr2)
     
 gossip()
-    
+
+def set_gossip_list(gossip_list):
+    GOSSIP_LIST = gossip_list
     
 
 
