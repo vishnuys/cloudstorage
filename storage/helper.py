@@ -197,7 +197,7 @@ def replicateUpdateFile(name, bucket, file):
 def reconcile_gossip(recieved_list):
     for s in GOSSIP_LIST:
         for r in recieved_list:
-            s['HB'] = max(s['HB'], r['HB]'])
+            s['HB'] = max(s['HB'], r['HB'])
             s['last_modified'] = max(s['last_modified'], r['last_modified'])
     print('reconciled list = ' + GOSSIP_LIST)
 
