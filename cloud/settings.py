@@ -147,7 +147,8 @@ from threading import Timer
 from cloud.settings import NODE_NAME,NODE_ADDRESS
 
 GOSSIP_LIST = []
-t_gossip = 10.0
+t_gossip = 5.0
+t_fail = 10.0
 
 for i in AVAILABLE_NODES:
     GOSSIP_LIST.append({'name':i['name'],'address':i['address'],'HB':0,'last_modified':datetime.datetime.now().timestamp()})
@@ -179,8 +180,21 @@ def gossip():
     
 gossip()
 
-def set_gossip_list(gossip_list):
-    GOSSIP_LIST = gossip_list
+last_list = GOSSIP_LIST
+with open(BASE_DIR + '/gossip.json','r') as f:
+    last_list = json.load(f)
+
+def fail_check_callback():
+    Timer(t_fail,fail_check_callback).start()
+    with open(BASE_DIR + '/gossip.json','r') as f:
+        current_list = json.load(f)
+        for idx, x in enumerate(last_list):
+            if x['HB'] == current_list[idx]['HB']:
+                print (x['name'] + ' has failed')
+        last_list = current_list
+
+Timer(t_fail, fail_check_callback).start()
+
     
 
 
