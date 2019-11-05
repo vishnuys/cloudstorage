@@ -147,7 +147,7 @@ from threading import Timer
 from cloud.settings import NODE_NAME,NODE_ADDRESS
 
 GOSSIP_LIST = []
-t_gossip = 0.5
+t_gossip = 10.0
 
 for i in AVAILABLE_NODES:
     GOSSIP_LIST.append({'name':i['name'],'address':i['address'],'HB':0,'last_modified':datetime.datetime.now().timestamp()})
