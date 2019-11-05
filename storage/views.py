@@ -272,8 +272,8 @@ class ReplicateUpdateFile(TemplateView):
         file = request.FILES['file']
         name = request.POST.get('name')
         bucket = request.POST.get('bucket')
-        version = request.POST.get('version')
-        timestamp = request.POST.get('timestamp')
+        version = int(request.POST.get('version'))
+        timestamp = float(request.POST.get('timestamp'))
         path = os.path.join(ARCHIVE_DIR, bucket, name)
         files = File.objects.filter(name=name)
         buckets = Bucket.objects.filter(name=bucket)
