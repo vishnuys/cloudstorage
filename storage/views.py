@@ -272,6 +272,8 @@ class ReplicateUpdateFile(TemplateView):
         file = request.FILES['file']
         name = request.POST.get('name')
         bucket = request.POST.get('bucket')
+        version = request.POST.get('version')
+        timestamp = request.POST.get('timestamp')
         path = os.path.join(ARCHIVE_DIR, bucket, name)
         files = File.objects.filter(name=name)
         buckets = Bucket.objects.filter(name=bucket)
@@ -282,13 +284,24 @@ class ReplicateUpdateFile(TemplateView):
         elif len(files) == 0:
             return HttpResponseBadRequest('File doesn\'t exist.')
         else:
-            with open(path, 'wb') as f:
-                for chunk in file.chunks():
-                    f.write(chunk)
             bucket_model = Bucket.objects.get(name=bucket)
             file_model = File.objects.get(name=name, bucket=bucket_model)
-            file_model.version += 1
-            file_model.save()
+            if version > file_model.version:
+                with open(path, 'wb') as f:
+                    for chunk in file.chunks():
+                        f.write(chunk)
+                file_model.version += 1
+                file_model.save()
+                result = 'File Updation Successful'
+            elif version == file_model.version and timestamp > file_model.last_modified.timestamp():
+                with open(path, 'wb') as f:
+                    for chunk in file.chunks():
+                        f.write(chunk)
+                file_model.version += 1
+                file_model.save()
+                result = 'File Updation Successful'
+            else:
+                result = 'File is version is higher than the recieved file'
             result = {'vector': file_model.version, 'status': 'File Updation Successful'}
             return JsonResponse(result)
 
