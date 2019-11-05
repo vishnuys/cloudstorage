@@ -169,7 +169,7 @@ def replicateUpdateFile(name, bucket, file):
     data = {
         'name': name,
         'bucket': bucket,
-        'version': file_model.version,
+        'vector': file_model.version,
         'timestamp': file_model.last_modified.timestamp()
     }
     filedata = {'file': fp}

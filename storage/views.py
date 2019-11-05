@@ -272,7 +272,7 @@ class ReplicateUpdateFile(TemplateView):
         file = request.FILES['file']
         name = request.POST.get('name')
         bucket = request.POST.get('bucket')
-        version = int(request.POST.get('version'))
+        vector = int(request.POST.get('vector'))
         timestamp = float(request.POST.get('timestamp'))
         path = os.path.join(ARCHIVE_DIR, bucket, name)
         files = File.objects.filter(name=name)
@@ -286,14 +286,14 @@ class ReplicateUpdateFile(TemplateView):
         else:
             bucket_model = Bucket.objects.get(name=bucket)
             file_model = File.objects.get(name=name, bucket=bucket_model)
-            if version > file_model.version:
+            if vector > file_model.version:
                 with open(path, 'wb') as f:
                     for chunk in file.chunks():
                         f.write(chunk)
                 file_model.version += 1
                 file_model.save()
                 result = 'File Updation Successful'
-            elif version == file_model.version and timestamp > file_model.last_modified.timestamp():
+            elif vector == file_model.version and timestamp > file_model.last_modified.timestamp():
                 with open(path, 'wb') as f:
                     for chunk in file.chunks():
                         f.write(chunk)
@@ -348,20 +348,20 @@ class ReadReconciliation(TemplateView):
         try:
             name = request.POST.get('name')
             bucket = request.POST.get('bucket')
-            version = int(request.POST.get('version'))
+            vector = int(request.POST.get('vector'))
             timestamp = float(request.POST.get('timestamp'))
             file = request.FILES['file']
             path = os.path.join(ARCHIVE_DIR, bucket, name)
             bucket_model = Bucket.objects.get(name=bucket)
             file_model = File.objects.get(name=name, bucket=bucket_model)
-            if version > file_model.version:
+            if vector > file_model.version:
                 with open(path, 'wb') as f:
                     for chunk in file.chunks():
                         f.write(chunk)
-                file_model.version += version
+                file_model.version = vector
                 file_model.save()
                 result = 'File Updation Successful'
-            elif version == file_model.version and timestamp > file_model.last_modified.timestamp():
+            elif vector == file_model.version and timestamp > file_model.last_modified.timestamp():
                 with open(path, 'wb') as f:
                     for chunk in file.chunks():
                         f.write(chunk)
