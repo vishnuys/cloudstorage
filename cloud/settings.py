@@ -150,15 +150,15 @@ GOSSIP_LIST = []
 t_gossip = 0.5
 
 for i in AVAILABLE_NODES:
-    GOSSIP_LIST.append({'name':i['name'],'address':i['address'],'HB':0,'last_modified':datetime.utcnow().timestamp()})
-GOSSIP_LIST.append({'name':NODE_NAME,'address':NODE_ADDRESS,'HB':0,'last_modified':datetime.utcnow().timestamp()})
+    GOSSIP_LIST.append({'name':i['name'],'address':i['address'],'HB':0,'last_modified':datetime.datetime.now().timestamp()})
+GOSSIP_LIST.append({'name':NODE_NAME,'address':NODE_ADDRESS,'HB':0,'last_modified':datetime.datetime.now().timestamp()})
 
 timer = threading.Timer(t_gossip, gossip)
 
 def gossip():
     timer.start()
     GOSSIP_LIST[-1]['HB'] += 1
-    GOSSIP_LIST[-1]['last_modified'] = datetime.utcnow().timestamp()
+    GOSSIP_LIST[-1]['last_modified'] = datetime.datetime.now().timestamp()
     addr1 = os.path.join(GOSSIP_LIST[0]['address'], 'gossip/')
     addr2 = os.path.join(GOSSIP_LIST[1]['address'], 'gossip/')
     data = json.dumps(GOSSIP_LIST)
