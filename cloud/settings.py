@@ -144,7 +144,7 @@ sendAlive()
 import json
 import datetime
 from threading import Timer
-from clouder.settings import NODE_NAME,NODE_ADDRESS
+from cloud.settings import NODE_NAME,NODE_ADDRESS
 
 GOSSIP_LIST = []
 t_gossip = 0.5
