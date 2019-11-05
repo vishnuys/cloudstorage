@@ -335,7 +335,7 @@ class GetVector(TemplateView):
             bucket = request.POST.get('bucket')
             bucket_model = Bucket.objects.get(name=bucket)
             file = File.objects.get(name=name, bucket=bucket_model)
-            result = {'vector': file.version}
+            result = {'node': NODE_NAME, 'vector': file.version, 'timestamp': file.last_modified.timestamp()}
             return JsonResponse(result)
         except ObjectDoesNotExist:
             return HttpResponseNotFound('Invalid File')
