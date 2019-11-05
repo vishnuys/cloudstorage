@@ -163,7 +163,7 @@ def gossip():
     print('Starting Gossip---------------------------------\n\n')
     print (GOSSIP_LIST)
 
-    data = json.dumps(GOSSIP_LIST)
+    data = {'gossiplist': json.dumps(GOSSIP_LIST)}
     print ('Json data:')
     print (data)
     try:
