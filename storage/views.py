@@ -302,7 +302,7 @@ class ReplicateUpdateFile(TemplateView):
                 result = 'File Updation Successful'
             else:
                 result = 'File is version is higher than the recieved file'
-            result = {'vector': file_model.version, 'status': 'File Updation Successful'}
+            result = {'vector': file_model.version, 'status': result}
             return JsonResponse(result)
 
 
@@ -336,6 +336,41 @@ class GetVector(TemplateView):
             bucket_model = Bucket.objects.get(name=bucket)
             file = File.objects.get(name=name, bucket=bucket_model)
             result = {'node': NODE_NAME, 'vector': file.version, 'timestamp': file.last_modified.timestamp()}
+            return JsonResponse(result)
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound('Invalid File')
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ReadReconciliation(TemplateView):
+
+    def post(self, request):
+        try:
+            name = request.POST.get('name')
+            bucket = request.POST.get('bucket')
+            version = int(request.POST.get('version'))
+            timestamp = float(request.POST.get('timestamp'))
+            file = request.FILES['file']
+            path = os.path.join(ARCHIVE_DIR, bucket, name)
+            bucket_model = Bucket.objects.get(name=bucket)
+            file_model = File.objects.get(name=name, bucket=bucket_model)
+            if version > file_model.version:
+                with open(path, 'wb') as f:
+                    for chunk in file.chunks():
+                        f.write(chunk)
+                file_model.version += version
+                file_model.save()
+                result = 'File Updation Successful'
+            elif version == file_model.version and timestamp > file_model.last_modified.timestamp():
+                with open(path, 'wb') as f:
+                    for chunk in file.chunks():
+                        f.write(chunk)
+                file_model.version += 1
+                file_model.save()
+                result = 'File Updation Successful'
+            else:
+                result = 'File is version is higher than the recieved file'
+            result = {'vector': file.version, 'status': result}
             return JsonResponse(result)
         except ObjectDoesNotExist:
             return HttpResponseNotFound('Invalid File')
