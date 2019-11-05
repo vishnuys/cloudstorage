@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse, HttpResponseNotFound
 from .helper import replicateBucket, hinted_handoff, replicateDelete, replicateFile, \
-    replicateDeleteFile, replicateUpdateFile
+    replicateDeleteFile, replicateUpdateFile, reconcile_gossip
 
 
 # Create your views here.
