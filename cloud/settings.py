@@ -131,7 +131,6 @@ STATIC_URL = '/static/'
 
 from .conf import *
 
-
 def sendAlive():
     for i in AVAILABLE_NODES:
         addr = os.path.join(i['address'], 'alive/')
@@ -140,5 +139,43 @@ def sendAlive():
         except Exception:
             print(format_exc())
 
-
 sendAlive()
+
+import json
+import datetime
+from threading import Timer
+from clouder.settings import NODE_NAME,NODE_ADDRESS
+
+GOSSIP_LIST = []
+t_gossip = 0.5
+
+for i in AVAILABLE_NODES:
+    GOSSIP_LIST.append({'name':i['name'],'address':i['address'],'HB':0,'last_modified':datetime.utcnow().timestamp()})
+GOSSIP_LIST.append({'name':NODE_NAME,'address':NODE_ADDRESS,'HB':0,'last_modified':datetime.utcnow().timestamp()})
+
+timer = threading.Timer(t_gossip, gossip)
+
+def gossip():
+    timer.start()
+    GOSSIP_LIST[-1]['HB'] += 1
+    GOSSIP_LIST[-1]['last_modified'] = datetime.utcnow().timestamp()
+    addr1 = os.path.join(GOSSIP_LIST[0]['address'], 'gossip/')
+    addr2 = os.path.join(GOSSIP_LIST[1]['address'], 'gossip/')
+    data = json.dumps(GOSSIP_LIST)
+    try:
+        r = requests.post(addr1, data=data)
+    except:
+        print('Gossip failed for ' + addr1)
+    try:
+        r = requests.post(addr2, data=data)
+    except:
+        print('Gossip failed for ' + addr2)
+    
+gossip()
+    
+    
+
+
+
+
+

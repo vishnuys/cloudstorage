@@ -186,3 +186,6 @@ def replicateUpdateFile(name, bucket, file):
     if delete:
         os.remove(filepath)
     return count, clocks
+
+def gossip(node):
+    
