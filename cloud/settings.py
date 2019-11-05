@@ -153,13 +153,20 @@ for i in AVAILABLE_NODES:
     GOSSIP_LIST.append({'name':i['name'],'address':i['address'],'HB':0,'last_modified':datetime.datetime.now().timestamp()})
 GOSSIP_LIST.append({'name':NODE_NAME,'address':NODE_ADDRESS,'HB':0,'last_modified':datetime.datetime.now().timestamp()})
 
+with open('gossip.json','w') as f:
+    json.dump(GOSSIP_LIST, f)
 
 def gossip():
     Timer(t_gossip,gossip).start()
+    with open(BASE_DIR + '/gossip.json', 'r') as f:
+        GOSSIP_LIST = json.load(f)
     GOSSIP_LIST[-1]['HB'] += 1
     GOSSIP_LIST[-1]['last_modified'] = datetime.datetime.now().timestamp()
     addr1 = os.path.join(GOSSIP_LIST[0]['address'], 'gossip/')
     addr2 = os.path.join(GOSSIP_LIST[1]['address'], 'gossip/')
+    
+    with open(BASE_DIR + '/gossip.json', 'w') as f:
+        json.dump(GOSSIP_LIST, f)
     data = {'gossiplist': json.dumps(GOSSIP_LIST)}
     try:
         r = requests.post(addr1, data=data)

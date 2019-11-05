@@ -5,7 +5,7 @@ from uuid import uuid4
 from IPython import embed
 from traceback import format_exc
 from .models import HandoffQueue, Bucket, File
-from cloud.settings import AVAILABLE_NODES, HANDOFF_DIR, GOSSIP_LIST, set_gossip_list
+from cloud.settings import BASE_DIR, AVAILABLE_NODES, HANDOFF_DIR, GOSSIP_LIST, set_gossip_list
 
 
 def replicateBucket(name):
@@ -194,12 +194,18 @@ def replicateUpdateFile(name, bucket, file):
         os.remove(filepath)
     return count, clocks
 
+import json
+
 def reconcile_gossip(recieved_list):
+    with open(BASE_DIR + '/gossip.json','r') as f:
+        GOSSIP_LIST = json.load(f)
     for s in GOSSIP_LIST:
         for r in recieved_list:
             s['HB'] = max(s['HB'], r['HB'])
             s['last_modified'] = max(s['last_modified'], r['last_modified'])
-    set_gossip_list(GOSSIP_LIST)
+    with open(BASE_DIR + '/gossip.json','w') as f:
+        json.dump(GOSSIP_LIST, f)
+    #set_gossip_list(GOSSIP_LIST)
     print('reconciled list = ' + str(GOSSIP_LIST))
 
 
