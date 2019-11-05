@@ -380,6 +380,7 @@ class ReadReconciliation(TemplateView):
 class HandleGossip(TemplateView):
 
     def post(self, request):
-        print(request.POST)
-        #gossip_data = json.loads(request.POST.get('data',''))
-        #reconcile_gossip(GOSSIP_LIST, gossip_data)
+        gossip_data = json.loads(request.POST.get('gossiplist'))
+        print(gossip_data)
+        reconcile_gossip(GOSSIP_LIST, gossip_data)
+        return HttpResponse('Success')
