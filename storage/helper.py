@@ -5,7 +5,7 @@ from uuid import uuid4
 from IPython import embed
 from traceback import format_exc
 from .models import HandoffQueue, Bucket, File
-from cloud.settings import BASE_DIR, AVAILABLE_NODES, HANDOFF_DIR, GOSSIP_LIST, set_gossip_list
+from cloud.settings import BASE_DIR, AVAILABLE_NODES, HANDOFF_DIR, GOSSIP_LIST
 
 
 def replicateBucket(name):
