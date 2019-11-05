@@ -6,7 +6,7 @@ import mimetypes
 from IPython import embed
 from .models import Bucket, File
 from django.views.generic import TemplateView
-from cloud.settings import ARCHIVE_DIR, NODE_NAME, GOSSIP_LIST
+from cloud.settings import ARCHIVE_DIR, NODE_NAME
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ObjectDoesNotExist
@@ -382,5 +382,5 @@ class HandleGossip(TemplateView):
     def post(self, request):
         gossip_data = json.loads(request.POST.get('gossiplist'))
         print(gossip_data)
-        reconcile_gossip(GOSSIP_LIST, gossip_data)
+        reconcile_gossip(gossip_data)
         return HttpResponse('Success')
