@@ -207,7 +207,9 @@ def fail_check_callback():
         current_list = json.load(f)
         for idx, x in enumerate(last_list):
             if x['HB'] == current_list[idx]['HB']:
+                print ('#'*70)
                 print (x['name'] + ' has failed')
+                print ('#'*70)
         last_list = current_list
 
 Timer(t_fail, fail_check_callback).start()
