@@ -165,28 +165,15 @@ def gossip():
         GOSSIP_LIST = json.load(f)
     GOSSIP_LIST[-1]['HB'] += 1
     GOSSIP_LIST[-1]['last_modified'] = datetime.datetime.now().timestamp()
-    #addr1 = os.path.join(GOSSIP_LIST[0]['address'], 'gossip/')
-    #addr2 = os.path.join(GOSSIP_LIST[1]['address'], 'gossip/')
     addr = os.path.join(GOSSIP_LIST[rr_node]['address'], 'gossip/')
-
     with open(BASE_DIR + '/gossip.json', 'w') as f:
         json.dump(GOSSIP_LIST, f)
     data = {'gossiplist': json.dumps(GOSSIP_LIST)}
-    
     try:
         r = requests.post(addr, data = data)
     except:
         pass
-        #print('gossip failed for' + GOSSIP_LIST[rr_node]['name']
     rr_node = (rr_node + 1) % 2
-    #try:
-    #    r = requests.post(addr1, data=data)
-    #except:
-    #    print('Gossip failed for ' + addr1)
-    #try:
-    #    r = requests.post(addr2, data=data)
-    #except:
-    #    print('Gossip failed for ' + addr2)
     
 gossip()
 
@@ -207,9 +194,7 @@ def fail_check_callback():
         current_list = json.load(f)
         for idx, x in enumerate(last_list):
             if x['HB'] == current_list[idx]['HB']:
-                print ('#'*70)
-                print (x['name'] + ' has failed')
-                print ('#'*70)
+                print( x['name'] + ' has failed')
         last_list = current_list
 
 Timer(t_fail, fail_check_callback).start()
