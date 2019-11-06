@@ -159,6 +159,7 @@ with open('gossip.json','w') as f:
     json.dump(GOSSIP_LIST, f)
 
 def gossip():
+    global rr_node
     Timer(t_gossip,gossip).start()
     with open(BASE_DIR + '/gossip.json', 'r') as f:
         GOSSIP_LIST = json.load(f)
