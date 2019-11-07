@@ -144,7 +144,7 @@ sendAlive()
 import json
 import datetime
 from threading import Timer
-from cloud.settings import NODE_NAME,NODE_ADDRESS
+from cloud.settings import NODE_NAME,NODE_ADDRESS, LOADBALANCER_ADDRESS
 
 GOSSIP_LIST = []
 rr_node = 0
@@ -170,6 +170,7 @@ def gossip():
         json.dump(GOSSIP_LIST, f)
     data = {'gossiplist': json.dumps(GOSSIP_LIST)}
     try:
+        r = requests.post(LOADBALANCER_ADDRESS + '/gossip/', data = data)
         r = requests.post(addr, data = data)
     except:
         pass
