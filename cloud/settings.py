@@ -144,7 +144,7 @@ sendAlive()
 import json
 import datetime
 from threading import Timer
-from cloud.settings import NODE_NAME,NODE_ADDRESS, LOADBALANCER_ADDRESS
+from cloud.settings import NODE_NAME,NODE_ADDRESS
 
 GOSSIP_LIST = []
 rr_node = 0
