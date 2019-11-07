@@ -381,6 +381,6 @@ class HandleGossip(TemplateView):
 
     def post(self, request):
         gossip_data = json.loads(request.POST.get('gossiplist'))
-        #print(gossip_data)
+        print(gossip_data)
         reconcile_gossip(gossip_data)
         return HttpResponse('Success')
