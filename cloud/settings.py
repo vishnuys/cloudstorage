@@ -166,7 +166,7 @@ def gossip():
     GOSSIP_LIST[-1]['HB'] += 1
     GOSSIP_LIST[-1]['last_modified'] = datetime.datetime.now().timestamp()
     addr = os.path.join(GOSSIP_LIST[rr_node]['address'], 'gossip/')
-    with open(BASE_DIR + '/gossip.json', 'w') as f:
+    with open(BASE_DIR + '/gossip.json', 'w+') as f:
         json.dump(GOSSIP_LIST, f)
     data = {'gossiplist': json.dumps(GOSSIP_LIST)}
     try:
