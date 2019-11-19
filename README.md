@@ -1,4 +1,4 @@
-# Cloud Computing Project: Scalable Distributed Object Storage with Consitent Hashing
+# Cloud Computing Project: Scalable Distributed Object Storage with Consistent Hashing
 ### Storage Node with Replication for Object Storage that recieves tasks from LoadBalancer and performs the operations Create/Delete Buckets and Create/Update/Delete Files.
 Implementation of the characterstics of [Amazon Dynamo Paper](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf) like Consistent Hashing, Sloppy Quorum and Hinted Handoff as REST based Object storage service. 
 #### Requirements:
